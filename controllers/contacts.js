@@ -1,49 +1,68 @@
-const { Contact } = require('../models/sequelize');
+const { Contact, Company } = require('../models/sequelize');
 
 async function getAll(req, res) {
-  // TODO CHALLENGE 01: recuperar todos los contactos con Sequelize
-  const contacts = [];
-
-  res.status(200).json(contacts);
+  try {
+    const contacts = await Contact.findAll();
+    res.status(200).json(contacts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 }
 
 async function getById(req, res) {
-  const contact = await Contact.findByPk(req.params.id);
+  try {
+    const contact = await Contact.findByPk(req.params.id, {
+      include: [{ model: Company, as: 'company' }]
+    });
 
-  if (!contact) {
-    return res.status(404).json({ error: 'Contact not found' });
+    if (!contact) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
+
+    res.status(200).json(contact);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-
-  res.status(200).json(contact);
 }
 
 async function create(req, res) {
-  const { firstName, lastName, email, phone, companyId } = req.body;
-  const contact = await Contact.create({ firstName, lastName, email, phone, companyId });
-
-  res.status(201).json(contact);
+  try {
+    const { firstName, lastName, email, phone, companyId } = req.body;
+    const contact = await Contact.create({ firstName, lastName, email, phone, companyId });
+    res.status(201).json(contact);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 }
 
 async function update(req, res) {
-  const contact = await Contact.findByPk(req.params.id);
+  try {
+    const contact = await Contact.findByPk(req.params.id);
 
-  if (!contact) {
-    return res.status(404).json({ error: 'Contact not found' });
+    if (!contact) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
+
+    await contact.update(req.body);
+
+    res.status(200).json(contact);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
-
-  // TODO CHALLENGE 07: actualizar el contacto con los datos recibidos en req.body
-
-  res.status(200).json(contact);
 }
 
 async function remove(req, res) {
-  const deleted = await Contact.destroy({ where: { id: req.params.id } });
+  try {
+    const deleted = await Contact.destroy({ where: { id: req.params.id } });
 
-  if (deleted === 0) {
-    return res.status(404).json({ error: 'Contact not found' });
+    if (deleted === 0) {
+      return res.status(404).json({ error: 'Contact not found' });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-
-  res.status(204).send();
 }
 
 module.exports = {
