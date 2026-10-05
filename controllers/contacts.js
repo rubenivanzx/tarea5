@@ -2,7 +2,12 @@ const { Contact, Company } = require('../models/sequelize');
 
 async function getAll(req, res) {
   try {
-    const contacts = await Contact.findAll();
+    const where = {};
+    if (req.query.companyId) {
+      where.companyId = req.query.companyId;
+    }
+
+    const contacts = await Contact.findAll({ where });
     res.status(200).json(contacts);
   } catch (error) {
     res.status(500).json({ error: error.message });
