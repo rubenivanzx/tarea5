@@ -1,14 +1,17 @@
 const Activity = require('../models/mongoose/activity');
 
 async function getAll(req, res) {
-  const filter = {};
-  if (req.query.type) {
-    filter.type = req.query.type;
+  try {
+    const filter = {};
+    if (req.query.type) {
+      filter.type = req.query.type;
+    }
+
+    const activities = await Activity.find(filter);
+    res.status(200).json(activities);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-
-  const activities = await Activity.find(filter);
-
-  res.status(200).json(activities);
 }
 
 async function getById(req, res) {
